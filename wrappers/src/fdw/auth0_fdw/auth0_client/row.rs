@@ -1,0 +1,72 @@
+use pgrx::JsonB;
+use serde::Deserialize;
+use serde::Serialize;
+use khulnasoft_wrappers::prelude::Cell;
+use khulnasoft_wrappers::prelude::Column;
+use khulnasoft_wrappers::prelude::Row;
+
+#[derive(Debug, Serialize, PartialEq)]
+pub(crate) struct UserRequest {
+    limit: Option<u64>,
+    offset: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct ResultPayload {
+    users: Vec<Auth0User>,
+    start: Option<u64>,
+    limit: Option<u64>,
+    length: Option<u64>,
+    total: Option<u64>,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub(crate) struct Success {
+    status: String,
+    result: ResultPayload,
+    time: f64,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct Auth0User {
+    pub created_at: String,
+    pub email: String,
+    pub email_verified: bool,
+    pub identities: Option<serde_json::Value>,
+}
+
+impl ResultPayload {
+    pub fn into_users(self) -> Vec<Auth0User> {
+        self.users
+    }
+    pub fn get_total(&self) -> Option<u64> {
+        self.total
+    }
+}
+
+impl Auth0User {
+    pub(crate) fn into_row(mut self, columns: &[Column]) -> Row {
+        let mut row = Row::new();
+        for tgt_col in columns {
+            if tgt_col.name == "created_at" {
+                let cell_value = Some(Cell::String(self.created_at.clone()));
+                //    None => None, // Or use a default value or handle the error
+                // };
+                row.push("created_at", cell_value);
+            } else if tgt_col.name == "email" {
+                row.push("email", Some(Cell::String(self.email.clone())))
+            } else if tgt_col.name == "email_verified" {
+                row.push("email_verified", Some(Cell::Bool(self.email_verified)))
+            } else if tgt_col.name == "identities" {
+                let attrs = self
+                    .identities
+                    .take()
+                    .expect("Column `identities` missing in response");
+
+                row.push("identities", Some(Cell::Json(JsonB(attrs))))
+            }
+        }
+
+        row
+    }
+}
