@@ -1,0 +1,19 @@
+[package]
+name = "khulnasoft-wrappers-macros"
+version = "0.1.15"
+edition = "2021"
+authors = ["Khulnasoft Inc. https://khulnasoft.com/"]
+license = "Apache-2.0"
+description = "Postgres Foreign Data Wrapper development framework macros for khulnasoft-wrappers"
+homepage = "https://github.com/khulnasoft/wrappers/tree/main/khulnasoft-wrappers-macros"
+repository = "https://github.com/khulnasoft/wrappers/tree/main/khulnasoft-wrappers-macros"
+categories = ["database"]
+keywords = ["database", "postgres", "postgresql", "extension"]
+
+[dependencies]
+syn = { version = "1.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+
+[lib]
+proc-macro = true
